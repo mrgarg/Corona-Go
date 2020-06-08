@@ -1,6 +1,3 @@
- 
-
-
 function load_images(){
     //player,virus,gem
     enemy_image = new Image;
@@ -10,20 +7,15 @@ function load_images(){
     player_img.src = "Assets/superhero.png";
     
     gem_image = new Image;
-    gem_image.src = "Assets/gemm.png";
-    
-    
-    
-    
-    
-    
+    gem_image.src = "Assets/gemm.png";  
+        
 }
 function init(){
     //define the objects that we will have in the game
     canvas = document.getElementById("mycanvas");
     console.log(canvas);
-    W = 1000;
-    H = 500;
+    W = 1500;
+    H = 700;
     
     canvas.width = W;
     canvas.height = H;
@@ -33,6 +25,7 @@ function init(){
     console.log(pen);
     game_over = false;
     
+    // enemies
     e1 = {
 		x : 150,
 		y : 50,
@@ -41,36 +34,43 @@ function init(){
 		speed : 20,
 	};
 	e2 = {
-		x : 300,
+		x : 350,
 		y : 150,
 		w : 100,
 		h : 100,
 		speed : 30,
 	};
 	e3 = {
-		x : 450,
+		x : 550,
 		y : 20,
-		w : 100,
-		h : 100,
-		speed : 40,
-	};
-    e4 = {
-		x : 650,
-		y : 50,
 		w : 100,
 		h : 100,
 		speed : 35,
 	};
     
+    e4 = {
+		x : 750,
+		y : 50,
+		w : 100,
+		h : 100,
+		speed : 50,
+	};
+    e5 = {
+		x : 1050,
+		y : 50,
+		w : 100,
+		h : 100,
+		speed : 40,
+	};
     
-    enemy = [e1,e2,e3,e4];
+    enemy = [e1,e2,e3,e4,e5];
     
     player = {
 		x : 20,
-		y : H/2,
+		y : H/2-50,
 		w : 80,
 		h : 80,
-		speed : 20,
+		speed : 40,
         moving  : false,
         health : 100,
 	};
@@ -81,18 +81,34 @@ function init(){
 		w : 100,
 		h : 100,
 	};
-    //listen to events on the canvas
-    canvas.addEventListener('mousedown',function(){
-        console.log("Mouse Pressed"); 
-        player.moving = true;
-    });
-    canvas.addEventListener('mouseup',function(){
-        console.log("Mouse Released"); 
-        player.moving = false;
-    });
+    
+    // eventListener
+    function keyPressed(e)
+    {
+        if(e.key=="ArrowRight" ){
+
+            player.direction="right";
+        }
+        else if(e.key=="ArrowLeft" )
+        {
+            player.direction="left";
+        }
+        else if( e.key=="ArrowDown")
+        {
+            player.direction="down";
+        }
+        else{
+            player.direction="up";
+        }
+        player.moving=true;
+        console.log(player.direction);
+
+    }
+    document.addEventListener("keydown",keyPressed);
     
 }
 
+// to check collision
 function isOverlap(rect1,rect2){
     if (rect1.x < rect2.x + rect2.w &&
    rect1.x + rect1.w > rect2.x &&
@@ -111,34 +127,53 @@ function draw(){
     pen.clearRect(0,0,W,H);
     
     pen.fillStyle = "red";
-    //pen.fillRect(box.x,box.y,box.w,box.h);
-    //pen.drawImage(enemy_image,box.x,box.y,box.w,box.h);
     
-    //draw the player
-    
-    //draw the gem
+    //draw player
     pen.drawImage(player_img,player.x,player.y,player.w,player.h);
+    
+    // draw gem
     pen.drawImage(gem_image,gem.x,gem.y,gem.w,gem.h);
     
-    
+    // draw enemy
     for(let i=0;i<enemy.length;i++){
         pen.drawImage(enemy_image,enemy[i].x,enemy[i].y,enemy[i].w,enemy[i].h);
+   
     }
     
+    // draw score
     pen.fillStyle = "white";
-     pen.font = "30px Roboto"
+    pen.font = "30px Roboto"
     pen.fillText("Score "+player.health,25,25);
     
 }
 
 function update(){
     
-    //if the player is moving 
-    if(player.moving==true){
-        player.x += player.speed;
+    
+    if(player.direction=="right" && player.moving==true)    // for keyboard 
+    {
+        player.x = player.x+player.speed;
         player.health += 20;
+               
+    }
+    else if(player.direction=="left" && player.moving==true)
+    {
+        player.x = player.x-player.speed;  
+    }
+    else if ( player.direction =="up" && player.moving==true)
+    {
+        player.y = player.y-player.speed;
+       
+    }
+    else if ( player.direction =="down" && player.moving==true)
+    {
+        player.y= player.y+player.speed;
     }
     
+    player.moving=false;
+    
+    
+    // overlap with enemy
     for(let i=0;i<enemy.length;i++){
         if(isOverlap(enemy[i],player)){
             player.health -= 50;
@@ -150,15 +185,15 @@ function update(){
         }
     }
     
-   
-    
-    //overlap overlap
-    if(isOverlap(player,gem) && (player.x-gem.x)>-1){
+    //overlap with gem
+    if(isOverlap(player,gem)){
         
         pen.clearRect(gem.x,gem.y,gem.w,gem.h)
         console.log("You Won");
-        alert("You Won!");
-        game_over = true;
+        setTimeout(function(){
+            alert("You Won!");
+            game_over = true;
+        },0.5)
         return;
     }
     
